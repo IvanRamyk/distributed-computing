@@ -34,7 +34,7 @@ class SliderThread extends Thread {
 }
 
 
-public class Main extends JFrame{
+public class ATask extends JFrame{
 
 
     static int firstThreadPriority = 5;
