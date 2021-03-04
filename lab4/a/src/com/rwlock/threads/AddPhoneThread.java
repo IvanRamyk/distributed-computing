@@ -21,13 +21,21 @@ public class AddPhoneThread extends Thread {
     @Override
     public void run() {
         lock.writeLock().lock();
+        System.out.println("Add record thread lock.");
         try {
-            FileWriter fw = new FileWriter(path, true); //the true will append the new data
-            fw.write(person + " - " + phone + "\n");//appends the string to the file
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            FileWriter fw = new FileWriter(path, true);
+            fw.write(person + " - " + phone + "\n");
+            System.out.printf("Phone %s was added\n", phone);
             fw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Add record thread unlock.");
         lock.writeLock().unlock();
     }
 }

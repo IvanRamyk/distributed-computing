@@ -19,17 +19,15 @@ public class SearchPhoneThread extends Thread {
         this.lock = lock;
     }
 
-    public String getPerson() {
-        return person;
-    }
-
-    public ArrayList<String> getPhones() {
-        return phones;
-    }
-
     @Override
     public void run() {
         lock.readLock().lock();
+        System.out.println("Search phones thread lock.");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         try (BufferedReader br = new BufferedReader(new FileReader(path))){
             String line;
             while ((line = br.readLine()) != null) {
@@ -41,9 +39,12 @@ public class SearchPhoneThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Phone numbers of " + person + ":");
+        StringBuilder answer = new StringBuilder();
+        answer.append("Phone numbers of ").append(person).append(": ");
         for (String phone : phones)
-            System.out.print(phone + " ");
+            answer.append(phone).append(" ");
+        System.out.println(answer);
+        System.out.println("Search person thread unlock.");
         lock.readLock().unlock();
     }
 }

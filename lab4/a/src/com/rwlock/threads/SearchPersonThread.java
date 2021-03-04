@@ -1,5 +1,6 @@
 package com.rwlock.threads;
 
+import javax.sound.midi.Soundbank;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -19,17 +20,15 @@ public class SearchPersonThread extends Thread {
         this.phone = phone;
     }
 
-    public String getPerson() {
-        return person;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
     @Override
     public void run() {
         lock.readLock().lock();
+        System.out.println("Search person thread lock.");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -44,6 +43,9 @@ public class SearchPersonThread extends Thread {
         }
         if (person != null)
             System.out.println("Phone number " + phone + " belongs to " + person);
+        else
+            System.out.println("Phone number " + phone + " not found");
+        System.out.println("Search person thread unlock.");
         lock.readLock().unlock();
     }
 }
