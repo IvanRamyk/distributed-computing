@@ -6,7 +6,7 @@ public class Main {
         ReadWriteLock lock = new ReadWriteLock();
         Garden garden = new Garden(10, 10, lock);
         Gardener gardener = new Gardener(garden);
-        Nature nature = new Nature(garden, 5);
+        Nature nature = new Nature(garden, 20);
         Monitor1 monitor1 = new Monitor1(garden, "log");
         Monitor2 monitor2 = new Monitor2(garden);
         gardener.start();
