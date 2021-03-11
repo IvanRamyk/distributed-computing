@@ -2,12 +2,11 @@ package com.lab5c;
 
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ArrayThread extends Thread {
     private final CyclicBarrier barrier;
-    private List<Integer> array;
+    private final List<Integer> array;
     private final AtomicBoolean finished;
 
     public ArrayThread(CyclicBarrier barrier, List<Integer> string, AtomicBoolean finished) {

@@ -19,8 +19,7 @@ public class Checker implements Runnable {
     public void run() {
         System.out.println("Checking..");
 
-        int sums[] = new int[3];
-        int numOfEqual = 1;
+        int[] sums = new int[3];
         boolean isEqual = true;
         for (int i = 0; i < 3; ++i) {
             System.out.printf("Thread %d: ", i);
