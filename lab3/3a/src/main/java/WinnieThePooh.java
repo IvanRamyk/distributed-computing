@@ -93,6 +93,7 @@ public class WinnieThePooh {
         bear.start();
         for (int i = 0; i < N; ++i) {
             Bee bee = new Bee();
+            bee.setDaemon(false);
             bee.start();
         }
     }
