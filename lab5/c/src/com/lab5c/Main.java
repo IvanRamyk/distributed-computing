@@ -14,7 +14,7 @@ public class Main {
         Random random = new Random();
         for (int i = 0; i < 4; ++i) {
             ArrayList<Integer> array = new ArrayList<>();
-            for (int j = 0; j < 3; ++j)
+            for (int j = 0; j < 2; ++j)
                 array.add(random.nextInt(10));
             threads[i] = new ArrayThread(cyclicBarrier, array, finished);
             checker.setThreadAtIndex(i, threads[i]);
