@@ -1,10 +1,11 @@
 package models;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class Actor {
+public class Actor implements Serializable {
     private Long id;
     private String firstName;
     private String secondName;

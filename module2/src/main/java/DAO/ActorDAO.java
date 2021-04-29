@@ -101,7 +101,7 @@ public class ActorDAO {
 
     }
 
-    public static void deleteActorById(int actorId) {
+    public static void deleteActorById(Long actorId) {
 
         ConnectionPool cp = ConnectionPool.getConnectionPool();
         try(Connection connection = cp.getConnection();) {
@@ -109,7 +109,7 @@ public class ActorDAO {
                     "DELETE FROM actor\n" +
                             "\tWHERE id=?;";
             PreparedStatement st = connection.prepareStatement(sql);
-            st.setInt(1, actorId);
+            st.setLong(1, actorId);
             int count = st.executeUpdate();
             st.close();
             cp.releaseConnection(connection);
