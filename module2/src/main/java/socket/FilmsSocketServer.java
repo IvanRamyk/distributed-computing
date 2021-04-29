@@ -72,10 +72,29 @@ public class FilmsSocketServer {
                         List<Film> films = FilmDAO.getAllFilms();
                         out.writeObject(films);
                     }
+
+                    case "/recent-films" -> {
+                        List<Film> films = FilmDAO.getNLastYearsFilms(2);
+                        out.writeObject(films);
+                    }
+
                     case "/actors" -> {
                         List<Actor> actors = ActorDAO.getAllActors();
                         out.writeObject(actors);
                     }
+
+                    case "/film-actors" -> {
+                        Long filmId = (Long) in.readObject();
+                        List<Actor> actors = ActorDAO.findActorsByFilmId(filmId);
+                        out.writeObject(actors);
+                    }
+
+                    case "/n-films-actors" -> {
+                        int N = (int) in.readObject();
+                        List<Actor> actors = ActorDAO.findActorsAtLeastNFilms(N);
+                        out.writeObject(actors);
+                    }
+
                     case "/add-film" -> {
                         Film film = (Film) in.readObject();
                         FilmDAO.addFilm(film);
@@ -86,6 +105,13 @@ public class FilmsSocketServer {
                         FilmDAO.deleteFilmById(filmId);
                         out.writeObject("Ok");
                     }
+
+                    case "/delete-n-years-films" -> {
+                        int years = (int) in.readObject();
+                        FilmDAO.deleteNYearsFilms(years);
+                        out.writeObject("Ok");
+                    }
+
                     case "/add-actor" -> {
                         Actor actor = (Actor) in.readObject();
                         ActorDAO.addActor(actor);

@@ -40,7 +40,6 @@ public class FilmsSocketClient {
                     case "films" -> {
                         out.writeObject("/films");
                         out.flush();
-                        System.out.println("request was sent");
                         ArrayList<Film> films = (ArrayList<Film>) in.readObject();
                         for (Film film : films) {
                             System.out.println(film);
@@ -55,6 +54,7 @@ public class FilmsSocketClient {
                             System.out.println(actor);
                         }
                     }
+
 
                     case "add-film" -> {
                         System.out.println("Enter film props");
@@ -132,6 +132,55 @@ public class FilmsSocketClient {
                         String status = (String) in.readObject();
                         System.out.println(status);
                     }
+
+
+                    // Additional requests
+
+
+                    case "recent-films" -> {
+                        out.writeObject("/recent-films");
+                        out.flush();
+                        ArrayList<Film> films = (ArrayList<Film>) in.readObject();
+                        for (Film film : films) {
+                            System.out.println(film);
+                        }
+                    }
+
+                    case "film-actors" -> {
+                        System.out.println("Enter film id");
+                        Long id = consoleIn.nextLong();
+                        out.writeObject("/film-actors");
+                        out.writeObject(id);
+                        out.flush();
+                        ArrayList<Actor> actors = (ArrayList<Actor>) in.readObject();
+                        for (Actor actor : actors) {
+                            System.out.println(actor);
+                        }
+                    }
+
+                    case "n-films-actors" -> {
+                        System.out.println("Enter number of films");
+                        int n = consoleIn.nextInt();
+                        out.writeObject("/n-films-actors");
+                        out.writeObject(n);
+                        out.flush();
+                        ArrayList<Actor> actors = (ArrayList<Actor>) in.readObject();
+                        for (Actor actor : actors) {
+                            System.out.println(actor);
+                        }
+                    }
+
+                    case "delete-n-years-films" -> {
+                        System.out.println("Enter years");
+                        int years = consoleIn.nextInt();
+                        out.writeObject("/delete-n-years-films");
+                        out.writeObject(years);
+                        out.flush();
+                        String status = (String) in.readObject();
+                        System.out.println(status);
+                    }
+
+
                 }
 
             }

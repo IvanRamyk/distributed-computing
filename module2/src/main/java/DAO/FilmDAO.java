@@ -4,6 +4,7 @@ import models.Actor;
 import models.Film;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,6 +124,53 @@ public class FilmDAO {
             PreparedStatement st = connection.prepareStatement(sql);
             st.setLong(1, filmId);
             st.setLong(2, actorId);
+            int count = st.executeUpdate();
+            st.close();
+            cp.releaseConnection(connection);
+        } catch (SQLException | InterruptedException e1) {
+            e1.printStackTrace();
+        }
+
+    }
+
+    public static List<Film> getNLastYearsFilms(int N){
+        ConnectionPool cp = ConnectionPool.getConnectionPool();
+        try(Connection connection = cp.getConnection();) {
+            String sql =
+                    "SELECT id, name, release, country\n" +
+                            "\tFROM public.film\n" +
+                            "\tWHERE (? - EXTRACT(YEAR FROM release) < ?);";
+            PreparedStatement st = connection.prepareStatement(sql);
+            st.setInt(1, LocalDateTime.now().getYear());
+            st.setInt(2, N);
+            ResultSet rs = st.executeQuery();
+            List<Film> films = new ArrayList<>();
+            while(rs.next()) {
+                Long id = rs.getLong(1);
+                String name = rs.getString(2);
+                Timestamp release = rs.getTimestamp(3);
+                String country = rs.getString(4);
+                List<Actor> actors = ActorDAO.findActorsByFilmId(id);
+                films.add(new Film(id, name, release.toLocalDateTime(), country, actors));
+            }
+            st.close();
+            cp.releaseConnection(connection);
+            return films;
+        } catch (SQLException | InterruptedException e1) {
+            e1.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void deleteNYearsFilms(int years) {
+
+        ConnectionPool cp = ConnectionPool.getConnectionPool();
+        try(Connection connection = cp.getConnection();) {
+            String sql =
+                    "DELETE FROM public.film\n" +
+                            "\tWHERE (DATE_PART('year', '2021-01-01'::date) - DATE_PART('year', film.release::date)) > ?;";
+            PreparedStatement st = connection.prepareStatement(sql);
+            st.setLong(1, years);
             int count = st.executeUpdate();
             st.close();
             cp.releaseConnection(connection);
