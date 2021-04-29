@@ -89,7 +89,7 @@ public class WinnieThePooh {
     public static void main(String[] args) throws InterruptedException {
         int N = 3;
         semaphore.acquire();
-        Bear bear = new Bear(4);
+        Bear bear = new Bear(40);
         bear.start();
         for (int i = 0; i < N; ++i) {
             Bee bee = new Bee();
