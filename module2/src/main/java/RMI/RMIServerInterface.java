@@ -12,6 +12,8 @@ public interface RMIServerInterface extends Remote {
 
     public ArrayList<Actor> getFilmActors(Long filmId) throws RemoteException;
 
+    public ArrayList<Actor> getNFilmsActors(int films) throws RemoteException;
+
     public ArrayList<Film> getFilms() throws RemoteException;
 
     public ArrayList<Film> getRecentFilms() throws RemoteException;

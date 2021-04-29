@@ -28,6 +28,11 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     @Override
+    public ArrayList<Actor> getNFilmsActors(int films) throws RemoteException {
+        return (ArrayList<Actor>) ActorDAO.findActorsAtLeastNFilms(films);
+    }
+
+    @Override
     public ArrayList<Film> getFilms() {
         return (ArrayList<Film>) FilmDAO.getAllFilms();
     }
