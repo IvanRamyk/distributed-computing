@@ -8,7 +8,6 @@ public class Professor {
     private String firstName;
     private String lastName;
     private int age;
-    private Department department;
     private List<Subject> subjects;
 
     public Long getId() {
@@ -43,13 +42,6 @@ public class Professor {
         this.age = age;
     }
 
-    public Department getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(Department department) {
-        this.department = department;
-    }
 
     @Override
     public String toString() {
@@ -58,7 +50,6 @@ public class Professor {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", age=" + age +
-                ", department=" + department +
                 '}';
     }
 
@@ -67,20 +58,19 @@ public class Professor {
         if (this == o) return true;
         if (!(o instanceof Professor)) return false;
         Professor professor = (Professor) o;
-        return age == professor.age && id.equals(professor.id) && firstName.equals(professor.firstName) && lastName.equals(professor.lastName) && department.equals(professor.department);
+        return age == professor.age && id.equals(professor.id) && firstName.equals(professor.firstName) && lastName.equals(professor.lastName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, age, department);
+        return Objects.hash(id, firstName, lastName, age);
     }
 
-    public Professor(Long id, String firstName, String lastName, int age, Department department, List<Subject> subjects) {
+    public Professor(Long id, String firstName, String lastName, int age, List<Subject> subjects) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
-        this.department = department;
         this.subjects = subjects;
     }
 
