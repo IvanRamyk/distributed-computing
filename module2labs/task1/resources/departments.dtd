@@ -1,0 +1,11 @@
+<!DOCTYPE Department [
+<!ELEMENT Department (Professor+)
+<!ELEMENT firstName (#PCDATA)>
+<!ELEMENT lastName (#PCDATA)>
+<!ELEMENT age (#PCDATA)>
+<!ELEMENT id (#PCDATA)>
+<!ELEMENT Professor (firstName, lastName, age, id, Subject+)>
+<!ELEMENT hours (#PCDATA)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT Subject (hours, id, name)>
+]>

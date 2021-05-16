@@ -6,10 +6,14 @@ import entities.Subject;
 import xml.parsers.DepartmentsDOMParser;
 
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
 
 public class DepartmentApp extends JFrame {
@@ -17,7 +21,7 @@ public class DepartmentApp extends JFrame {
     private final String path = "resources/departments.xml";
 
 
-    private Department department;
+    private final Department department;
     private final Vector<String> professorsLabels = new Vector<String>(Arrays.asList("Id", "First name", "Last name", "Age"));
     private Vector<Vector<String>> professorsData = new Vector<Vector<String>>();
 
@@ -30,24 +34,18 @@ public class DepartmentApp extends JFrame {
     private JScrollPane professorTablePane;
     private JButton professorAdd = new JButton("Add professor");
     private JButton professorDelete = new JButton("Delete professor");
+    private JButton professorUpdate = new JButton("Update professor");
 
-    private JButton professorBoxFormAdd = new JButton("Add");
 
     private JTable subjectTable = new JTable(subjectData, subjectLabels);
     private JScrollPane subjectTablePane;
     private JButton subjectAdd = new JButton("Add subject");
     private JButton subjectDelete = new JButton("Delete subject");
+    private JButton subjectUpdate = new JButton("Update subject");
 
     private final Box contents;
 
     private JPanel professorBoxForm;
-    private JTextArea professorBoxFormName;
-    private JButton professorBoxFormBack = new JButton("Back");
-    private JLabel pNameLabel;
-    private Box pNameLabelBox;
-
-
-    private Container c;
     private JLabel title;
     private JLabel name;
     private JTextField tname;
@@ -55,59 +53,374 @@ public class DepartmentApp extends JFrame {
     private JTextField tlname;
     private JTextField tage;
     private JLabel age;
-    private JRadioButton male;
-    private JRadioButton female;
-    private ButtonGroup gengp;
-    private JLabel dob;
-    private JComboBox date;
-    private JComboBox month;
-    private JComboBox year;
-    private JLabel add;
-    private JTextArea tadd;
-    private JCheckBox term;
     private JButton sub;
     private JButton reset;
     private JTextArea tout;
-    private JLabel res;
-    private JTextArea resadd;
 
 
-    private void buildProfessorBoxForm() {
-        professorBoxForm = new JPanel();
-        professorBoxForm.setLayout(null);
-        pNameLabelBox = new Box(BoxLayout.X_AXIS);
-        professorBoxFormName = new JTextArea();
-        professorBoxFormName.setFont(new Font("Arial", Font.PLAIN, 15));
-        professorBoxFormName.setSize(300, 400);
-        pNameLabel = new JLabel("Name");
-        pNameLabel.setFont(new Font("Arial", Font.PLAIN, 20));
-        pNameLabel.setSize(100, 20);
-        pNameLabelBox.add(pNameLabel);
+    private JPanel subjectBoxForm;
+    private JLabel stitle;
+    private JLabel sname;
+    private JLabel professorLabel;
+    private JTextField stname;
+    private JTextField thours;
+    private JLabel hours;
+    private JButton subjectSubmit;
+    private JButton subjectReset;
+    private JTextArea sTout;
+    private JComboBox subjectProfessors;
+    private String[] professorsNames;
+    private ArrayList<Professor> professors;
 
-        professorBoxFormBack.addActionListener(e -> {
+
+    private JPanel deleteProfessorForm;
+    private JComboBox deleteProfessor;
+    private JLabel deleteProfessorLabel;
+    private JButton deleteProfessorButton;
+
+    private String[] subjectsNames;
+    private ArrayList<Subject> subjects;
+
+    private JPanel deleteSubjectForm;
+    private JComboBox deleteSubject;
+    private JLabel deleteSubjectLabel;
+    private JButton deleteSubjectButton;
+
+
+
+    private String[] buildProfessorsNames(ArrayList<Professor> professors) {
+        return professors.stream().map((p) -> p.getFirstName() + " " + p.getLastName()).toArray(String[]::new);
+    }
+
+    private String[] buildSubjectsNames(ArrayList<Subject> subjects) {
+        return subjects.stream().map((s) -> s.getName()).toArray(String[]::new);
+    }
+
+    private void buildSubjectDeleteForm() {
+        deleteSubjectForm = new JPanel();
+        deleteSubjectForm.setLayout(null);
+
+        stitle = new JLabel("Delete subject");
+        stitle.setFont(new Font("Arial", Font.PLAIN, 30));
+        stitle.setSize(300, 30);
+        stitle.setLocation(300, 30);
+        deleteSubjectForm.add(stitle);
+
+        subjects = department.getSubjects();
+        subjectsNames = buildSubjectsNames(subjects);
+
+        deleteSubjectLabel = new JLabel("Subject");
+        deleteSubjectLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        deleteSubjectLabel.setSize(100, 20);
+        deleteSubjectLabel.setLocation(100, 250);
+        deleteSubjectForm.add(deleteSubjectLabel);
+
+        deleteSubject = new JComboBox(subjectsNames);
+        deleteSubject.setFont(new Font("Arial", Font.PLAIN, 15));
+        deleteSubject.setSize(150, 20);
+        deleteSubject.setLocation(320, 250);
+        deleteSubjectForm.add(deleteSubject);
+
+        deleteSubjectButton = new JButton("Delete");
+        deleteSubjectButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        deleteSubjectButton.setSize(100, 20);
+        deleteSubjectButton.setLocation(150, 450);
+        deleteSubjectButton.addActionListener(
+                e -> {
+                    var th = new Thread(
+                            () -> {
+                                int subjectId = deleteSubject.getSelectedIndex();
+                                Long pId = subjects.get(subjectId).getId();
+                                try {
+                                    department.deleteSubjectById(pId);
+                                    rebuildProfessorTable();
+                                    rebuildSubjectTable();
+                                    contents.setVisible(true);
+                                    deleteSubjectForm.setVisible(false);
+
+                                } catch (Exception exception) {
+                                    exception.printStackTrace();
+                                }
+
+                            }
+                    );
+                    th.start();
+                }
+        );
+        deleteSubjectForm.add(deleteSubjectButton);
+
+        subjectReset = new JButton("Back");
+        subjectReset.setFont(new Font("Arial", Font.PLAIN, 15));
+        subjectReset.setSize(100, 20);
+        subjectReset.setLocation(270, 450);
+        subjectReset.addActionListener(e -> {
             var tr = new Thread(
                     () -> {
+                        rebuildProfessorTable();
+                        rebuildSubjectTable();
                         contents.setVisible(true);
-                        professorBoxForm.setVisible(false);
+                        deleteSubjectForm.setVisible(false);
                     }
             );
             tr.start();
         });
+        deleteSubjectForm.add(subjectReset);
+        deleteSubjectForm.setVisible(false);
+    }
+
+    private void buildProfessorDeleteForm() {
+        deleteProfessorForm = new JPanel();
+        deleteProfessorForm.setLayout(null);
+
+        stitle = new JLabel("Delete professor");
+        stitle.setFont(new Font("Arial", Font.PLAIN, 30));
+        stitle.setSize(300, 30);
+        stitle.setLocation(300, 30);
+        deleteProfessorForm.add(stitle);
+
+        professors = department.getProfessors();
+        professorsNames = buildProfessorsNames(professors);
+
+        deleteProfessorLabel = new JLabel("Professor");
+        deleteProfessorForm.setFont(new Font("Arial", Font.PLAIN, 20));
+        deleteProfessorLabel.setSize(100, 20);
+        deleteProfessorLabel.setLocation(100, 250);
+        deleteProfessorForm.add(deleteProfessorLabel);
+
+        deleteProfessor = new JComboBox(professorsNames);
+        deleteProfessor.setFont(new Font("Arial", Font.PLAIN, 15));
+        deleteProfessor.setSize(150, 20);
+        deleteProfessor.setLocation(320, 250);
+        deleteProfessorForm.add(deleteProfessor);
+
+        deleteProfessorButton = new JButton("Delete");
+        deleteProfessorButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        deleteProfessorButton.setSize(100, 20);
+        deleteProfessorButton.setLocation(150, 450);
+        deleteProfessorButton.addActionListener(
+                e -> {
+                    var th = new Thread(
+                            () -> {
+                                int professorId = deleteProfessor.getSelectedIndex();
+                                Long pId = professors.get(professorId).getId();
+                                try {
+                                    department.deleteProfessorsById(pId);
+                                    rebuildProfessorTable();
+                                    rebuildSubjectTable();
+                                    contents.setVisible(true);
+                                    deleteProfessorForm.setVisible(false);
+
+                                } catch (Exception exception) {
+                                    exception.printStackTrace();
+                                }
+
+                            }
+                    );
+                    th.start();
+                }
+        );
+        deleteProfessorForm.add(deleteProfessorButton);
+
+        subjectReset = new JButton("Back");
+        subjectReset.setFont(new Font("Arial", Font.PLAIN, 15));
+        subjectReset.setSize(100, 20);
+        subjectReset.setLocation(270, 450);
+        subjectReset.addActionListener(e -> {
+            var tr = new Thread(
+                    () -> {
+                        rebuildProfessorTable();
+                        rebuildSubjectTable();
+                        contents.setVisible(true);
+                        deleteProfessorForm.setVisible(false);
+                    }
+            );
+            tr.start();
+        });
+        deleteProfessorForm.add(subjectReset);
+        deleteProfessorForm.setVisible(false);
+    }
 
 
+    private void buildSubjectBoxForm(boolean isUpdate) {
+        subjectBoxForm = new JPanel();
+        subjectBoxForm.setLayout(null);
+        if (!isUpdate) {
+            stitle = new JLabel("New subject");
+            stitle.setFont(new Font("Arial", Font.PLAIN, 30));
+            stitle.setSize(300, 30);
+            stitle.setLocation(300, 30);
+            subjectBoxForm.add(stitle);
+        } else {
+            deleteSubjectLabel = new JLabel("Subject");
+            deleteSubjectLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+            deleteSubjectLabel.setSize(150, 30);
+            deleteSubjectLabel.setLocation(300, 30);
+            subjectBoxForm.add(deleteSubjectLabel);
+
+            subjects = department.getSubjects();
+            subjectsNames = buildSubjectsNames(subjects);
+
+            deleteSubject = new JComboBox(subjectsNames);
+            deleteSubject.setFont(new Font("Arial", Font.PLAIN, 15));
+            deleteSubject.setSize(300, 30);
+            deleteSubject.setLocation(450, 30);
+            subjectBoxForm.add(deleteSubject);
+        }
+        sname = new JLabel("Name");
+        sname.setFont(new Font("Arial", Font.PLAIN, 20));
+        sname.setSize(100, 20);
+        sname.setLocation(100, 100);
+        subjectBoxForm.add(sname);
+
+        stname = new JTextField();
+        stname.setFont(new Font("Arial", Font.PLAIN, 15));
+        stname.setSize(190, 20);
+        stname.setLocation(200, 100);
+        subjectBoxForm.add(stname);
+
+        hours = new JLabel("Hours");
+        hours.setFont(new Font("Arial", Font.PLAIN, 20));
+        hours.setSize(100, 20);
+        hours.setLocation(100, 150);
+        subjectBoxForm.add(hours);
+
+        thours = new JTextField();
+        thours.setFont(new Font("Arial", Font.PLAIN, 15));
+        thours.setSize(150, 20);
+        thours.setLocation(200, 150);
+        subjectBoxForm.add(thours);
+
+        professors = department.getProfessors();
+        professorsNames = buildProfessorsNames(professors);
+
+        professorLabel = new JLabel("Professor");
+        professorLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        professorLabel.setSize(100, 20);
+        professorLabel.setLocation(100, 250);
+        subjectBoxForm.add(professorLabel);
+
+        subjectProfessors = new JComboBox(professorsNames);
+        subjectProfessors.setFont(new Font("Arial", Font.PLAIN, 15));
+        subjectProfessors.setSize(150, 20);
+        subjectProfessors.setLocation(320, 250);
+        subjectBoxForm.add(subjectProfessors);
+
+        subjectSubmit = new JButton("Submit");
+        subjectSubmit.setFont(new Font("Arial", Font.PLAIN, 15));
+        subjectSubmit.setSize(100, 20);
+        subjectSubmit.setLocation(150, 450);
+        if (!isUpdate) {
+            subjectSubmit.addActionListener(
+                    e -> {
+                        var th = new Thread(
+                                () -> {
+                                    String name = stname.getText();
+                                    String shours = thours.getText();
+                                    int professorId = subjectProfessors.getSelectedIndex();
+                                    Long pId = professors.get(professorId).getId();
+                                    try {
+                                        int hours = Integer.parseInt(shours);
+                                        department.addSubject(department.getNextSubjectId(), name, hours, pId);
+                                    } catch (Exception exception) {
+                                        exception.printStackTrace();
+
+                                    }
+                                    stname.setText("");
+                                    thours.setText("");
+                                }
+                        );
+                        th.start();
+                    }
+            );
+        } else  {
+            subjectSubmit.addActionListener(
+                    e -> {
+                        var th = new Thread(
+                                () -> {
+                                    String name = stname.getText();
+                                    if (name.equals(""))
+                                        name = null;
+                                    String shours = thours.getText();
+                                    if (shours.equals(""))
+                                        shours = "-1";
+                                    int professorId = subjectProfessors.getSelectedIndex();
+                                    Long pId = professors.get(professorId).getId();
+
+                                    int subjectId = deleteSubject.getSelectedIndex();
+                                    Long sId = subjects.get(subjectId).getId();
+                                    try {
+                                        int hours = Integer.parseInt(shours);
+                                        department.updateSubject(new Subject(sId, name, hours, department.getProfessorById(pId)));
+                                    } catch (Exception exception) {
+                                        exception.printStackTrace();
+                                    }
+                                    rebuildProfessorTable();
+                                    rebuildSubjectTable();
+                                    contents.setVisible(true);
+                                    subjectBoxForm.setVisible(false);
+                                }
+                        );
+                        th.start();
+                    }
+            );
+        }
+        subjectBoxForm.add(subjectSubmit);
+
+        subjectReset = new JButton("Back");
+        subjectReset.setFont(new Font("Arial", Font.PLAIN, 15));
+        subjectReset.setSize(100, 20);
+        subjectReset.setLocation(270, 450);
+        subjectReset.addActionListener(e -> {
+            var tr = new Thread(
+                    () -> {
+                        rebuildProfessorTable();
+                        rebuildSubjectTable();
+                        contents.setVisible(true);
+                        subjectBoxForm.setVisible(false);
+                    }
+            );
+            tr.start();
+        });
+        subjectBoxForm.add(subjectReset);
+
+        sTout = new JTextArea();
+        sTout.setFont(new Font("Arial", Font.PLAIN, 15));
+        sTout.setSize(300, 400);
+        sTout.setLocation(500, 100);
+        sTout.setLineWrap(true);
+        sTout.setEditable(false);
+        subjectBoxForm.add(sTout);
+
+        subjectBoxForm.setVisible(false);
+    }
 
 
-        professorBoxForm.add(pNameLabelBox);
-        professorBoxForm.add(professorBoxFormAdd);
-        professorBoxForm.add(professorBoxFormBack);
+    private void buildProfessorBoxForm(boolean isUpdate) {
+        professorBoxForm = new JPanel();
+        professorBoxForm.setLayout(null);
+        if (isUpdate) {
+            deleteProfessorLabel = new JLabel("Professor");
+            deleteProfessorLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+            deleteProfessorLabel.setSize(150, 30);
+            deleteProfessorLabel.setLocation(300, 30);
+            professorBoxForm.add(deleteProfessorLabel);
 
+            professors = department.getProfessors();
+            professorsNames = buildProfessorsNames(professors);
 
-        title = new JLabel("New professor");
-        title.setFont(new Font("Arial", Font.PLAIN, 30));
-        title.setSize(300, 30);
-        title.setLocation(300, 30);
-        professorBoxForm.add(title);
+            deleteProfessor = new JComboBox(professorsNames);
+            deleteProfessor.setFont(new Font("Arial", Font.PLAIN, 15));
+            deleteProfessor.setSize(150, 30);
+            deleteProfessor.setLocation(450, 30);
+            professorBoxForm.add(deleteProfessor);
 
+        } else {
+            title = new JLabel("New professor");
+            title.setFont(new Font("Arial", Font.PLAIN, 30));
+            title.setSize(300, 30);
+            title.setLocation(300, 30);
+            professorBoxForm.add(title);
+        }
         name = new JLabel("FName");
         name.setFont(new Font("Arial", Font.PLAIN, 20));
         name.setSize(100, 20);
@@ -144,39 +457,83 @@ public class DepartmentApp extends JFrame {
         tage.setLocation(200, 200);
         professorBoxForm.add(tage);
 
-
-//        date = new JComboBox(dates);
-//        date.setFont(new Font("Arial", Font.PLAIN, 15));
-//        date.setSize(50, 20);
-//        date.setLocation(200, 250);
-//        c.add(date);
-//
-//        month = new JComboBox(months);
-//        month.setFont(new Font("Arial", Font.PLAIN, 15));
-//        month.setSize(60, 20);
-//        month.setLocation(250, 250);
-//        c.add(month);
-//
-//        year = new JComboBox(years);
-//        year.setFont(new Font("Arial", Font.PLAIN, 15));
-//        year.setSize(60, 20);
-//        year.setLocation(320, 250);
-//        c.add(year);
-
-
-
         sub = new JButton("Submit");
         sub.setFont(new Font("Arial", Font.PLAIN, 15));
         sub.setSize(100, 20);
         sub.setLocation(150, 450);
-        //sub.addActionListener(this);
+        if (isUpdate) {
+            sub.addActionListener(
+                    e -> {
+                        var th = new Thread(
+                                () -> {
+                                    String firstName = tname.getText();
+                                    String lastName = tlname.getText();
+                                    String sAge = tage.getText();
+                                    if (firstName.equals(""))
+                                        firstName = null;
+                                    if (lastName.equals(""))
+                                        lastName = null;
+                                    if (sAge.equals(""))
+                                        sAge = "-1";
+                                    int professorId = deleteProfessor.getSelectedIndex();
+                                    Long pId = professors.get(professorId).getId();
+                                    try {
+                                        int age = Integer.parseInt(sAge);
+                                        department.updateProfessor(new Professor(pId, firstName, lastName, age, null));
+                                    } catch (Exception exception) {
+                                        exception.printStackTrace();
+
+                                    }
+                                    rebuildProfessorTable();
+                                    rebuildSubjectTable();
+                                    contents.setVisible(true);
+                                    professorBoxForm.setVisible(false);
+                                }
+                        );
+                        th.start();
+                    }
+            );
+        } else {
+            sub.addActionListener(
+                    e -> {
+                        var th = new Thread(
+                                () -> {
+                                    String firstName = tname.getText();
+                                    String lastName = tlname.getText();
+                                    String sAge = tage.getText();
+                                    try {
+                                        int age = Integer.parseInt(sAge);
+                                        department.addProfessor(department.getNextProfessorId(), firstName, lastName, age);
+                                    } catch (Exception exception) {
+                                        exception.printStackTrace();
+
+                                    }
+                                    tname.setText("");
+                                    tlname.setText("");
+                                    tage.setText("");
+                                }
+                        );
+                        th.start();
+                    }
+            );
+        }
         professorBoxForm.add(sub);
 
-        reset = new JButton("Reset");
+        reset = new JButton("Back");
         reset.setFont(new Font("Arial", Font.PLAIN, 15));
         reset.setSize(100, 20);
         reset.setLocation(270, 450);
-        //reset.addActionListener(this);
+        reset.addActionListener(e -> {
+            var tr = new Thread(
+                    () -> {;
+                        rebuildProfessorTable();
+                        rebuildSubjectTable();
+                        contents.setVisible(true);
+                        professorBoxForm.setVisible(false);
+                    }
+            );
+            tr.start();
+        });
         professorBoxForm.add(reset);
 
         tout = new JTextArea();
@@ -186,20 +543,6 @@ public class DepartmentApp extends JFrame {
         tout.setLineWrap(true);
         tout.setEditable(false);
         professorBoxForm.add(tout);
-
-        res = new JLabel("");
-        res.setFont(new Font("Arial", Font.PLAIN, 20));
-        res.setSize(500, 25);
-        res.setLocation(100, 500);
-        professorBoxForm.add(res);
-
-        resadd = new JTextArea();
-        resadd.setFont(new Font("Arial", Font.PLAIN, 15));
-        resadd.setSize(200, 75);
-        resadd.setLocation(580, 175);
-        resadd.setLineWrap(true);
-        professorBoxForm.add(resadd);
-
 
         professorBoxForm.setVisible(false);
     }
@@ -231,6 +574,7 @@ public class DepartmentApp extends JFrame {
 
 
     private void rebuildProfessorTable() {
+        professorsData = professorsToStringData(department.getProfessors());
         contents.remove(professorTablePane);
         professorTable =  new JTable(professorsData, professorsLabels);
         professorTablePane = new JScrollPane(professorTable);
@@ -238,6 +582,7 @@ public class DepartmentApp extends JFrame {
     }
 
     private void rebuildSubjectTable() {
+        subjectData = subjectsToStringData(department.getSubjects());
         contents.remove(subjectTablePane);
         subjectTable =  new JTable(subjectData, subjectLabels);
         subjectTablePane = new JScrollPane(subjectTable);
@@ -249,8 +594,69 @@ public class DepartmentApp extends JFrame {
             var tr = new Thread(
                     () -> {
                         contents.setVisible(false);
+                        buildProfessorBoxForm(false);
                         add(professorBoxForm);
                         professorBoxForm.setVisible(true);
+                    }
+            );
+            tr.start();
+        });
+
+        subjectAdd.addActionListener(e -> {
+            var tr = new Thread(
+                    () -> {
+                        contents.setVisible(false);
+                        buildSubjectBoxForm(false);
+                        add(subjectBoxForm);
+                        subjectBoxForm.setVisible(true);
+                    }
+            );
+            tr.start();
+        });
+
+        professorDelete.addActionListener(e -> {
+            var tr = new Thread(
+                () -> {
+                    contents.setVisible(false);
+                    buildProfessorDeleteForm();
+                    add(deleteProfessorForm);
+                    deleteProfessorForm.setVisible(true);
+                }
+            );
+            tr.start();
+        });
+
+        subjectDelete.addActionListener(e -> {
+            var tr = new Thread(
+                    () -> {
+                        contents.setVisible(false);
+                        buildSubjectDeleteForm();
+                        add(deleteSubjectForm);
+                        deleteSubjectForm.setVisible(true);
+                    }
+            );
+            tr.start();
+        });
+
+        professorUpdate.addActionListener(e -> {
+            var tr = new Thread(
+                    () -> {
+                        contents.setVisible(false);
+                        buildProfessorBoxForm(true);
+                        add(professorBoxForm);
+                        professorBoxForm.setVisible(true);
+                    }
+            );
+            tr.start();
+        });
+
+        subjectUpdate.addActionListener(e -> {
+            var tr = new Thread(
+                    () -> {
+                        contents.setVisible(false);
+                        buildSubjectBoxForm(true);
+                        add(subjectBoxForm);
+                        subjectBoxForm.setVisible(true);
                     }
             );
             tr.start();
@@ -266,6 +672,8 @@ public class DepartmentApp extends JFrame {
         buttonsHolder.add(subjectAdd);
         buttonsHolder.add(professorDelete);
         buttonsHolder.add(subjectDelete);
+        buttonsHolder.add(professorUpdate);
+        buttonsHolder.add(subjectUpdate);
 
         setButtonsActions();
 
@@ -279,18 +687,30 @@ public class DepartmentApp extends JFrame {
         contents.add(subjectTablePane);
 
 
-        buildProfessorBoxForm();
+        buildProfessorBoxForm(false);
+        buildSubjectBoxForm(false);
 
 
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                dispose();
+                try {
+                    DepartmentsDOMParser.write(department, path);
+                } catch (ParserConfigurationException | TransformerException e) {
+                    e.printStackTrace();
+                }
+                System.exit(0);
+            }
+        });
         add(professorBoxForm);
         add(contents);
         setBounds(300, 90, 900, 600);
         setResizable(false);
 
 
-        professorsData = professorsToStringData(department.getProfessors());
-        subjectData = subjectsToStringData(department.getSubjects());
+
         rebuildProfessorTable();
         rebuildSubjectTable();
         setVisible(true);

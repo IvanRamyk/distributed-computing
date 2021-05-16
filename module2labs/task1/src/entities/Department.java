@@ -67,6 +67,7 @@ public class Department {
     }
 
     public void deleteProfessorsById(Long id) {
+        deleteSubjectByProfessorId(id);
         professors.removeIf(professor -> professor.getId().equals(id));
     }
 
@@ -87,7 +88,9 @@ public class Department {
                 return;
             }
         }
-        subjects.add(new Subject(id, name, hours, professor));
+        Subject subject = new Subject(id, name, hours, professor);
+        subjects.add(subject);
+        professor.getSubjects().add(subject);
     }
 
     public Subject getSubjectById(Long id) {
@@ -109,11 +112,60 @@ public class Department {
         return null;
     }
 
+    public Long getNextProfessorId() {
+        Long id = (long) countProfessors();
+        while (getProfessorById(id) != null)
+            id++;
+        return id;
+    }
+
+    public Long getNextSubjectId() {
+        Long id = (long) countSubjects();
+        while (getSubjectById(id) != null)
+            id++;
+        return id;
+    }
+
+
     public int countSubjects() {
         return subjects.size();
     }
 
     public void deleteSubjectById(Long id) {
-        subjects.removeIf(professor -> professor.getId().equals(id));
+        subjects.removeIf(subject -> subject.getId().equals(id));
+    }
+
+    public void deleteSubjectByProfessorId(Long id) {
+        subjects.removeIf(subject -> subject.getProfessor().getId().equals(id));
+    }
+
+    public void updateSubject(Subject newSubject) {
+        Subject oldSubject = getSubjectById(newSubject.getId());
+        if (oldSubject == null) {
+            return;
+        }
+        if (newSubject.getName() != null)
+            oldSubject.setName(newSubject.getName());
+        if (newSubject.getHours() != -1)
+            oldSubject.setHours(newSubject.getHours());
+        if (newSubject.getProfessor() != null) {
+            Professor newProfessor = getProfessorById(newSubject.getProfessor().getId());
+            oldSubject.setProfessor(newProfessor);
+        }
+    }
+
+    public void updateProfessor(Professor newProfessor) {
+        Professor professor = getProfessorById(newProfessor.getId());
+        System.out.println(newProfessor);
+        System.out.println(professor);
+        if (professor == null) {
+            return;
+        }
+        if (newProfessor.getFirstName() != null)
+            professor.setFirstName(newProfessor.getFirstName());
+        if (newProfessor.getLastName() != null)
+            professor.setLastName(newProfessor.getLastName());
+        if (newProfessor.getAge() != -1)
+            professor.setAge(newProfessor.getAge());
     }
 }
