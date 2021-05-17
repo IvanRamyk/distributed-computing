@@ -1,1 +1,17 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><Department><Professor age="45" firstName="Zmey" id="2" lastName="Gorynych"><Subject hours="12" id="3" name="Teoria ispepelenia"/></Professor><Professor age="1500" firstName="Chudo" id="5" lastName="Yudo"><Subject hours="50" id="7" name="Chudesa v reshete"/></Professor><Professor age="21" firstName="Ivan" id="6" lastName="Popovich"><Subject hours="25" id="6" name="Bogatyrskia Syla"/></Professor><Professor age="35" firstName="Illia" id="3" lastName="Muromec"/><Professor age="15000" firstName="Koshchey" id="4" lastName="Bessmertnyi"><Subject hours="100" id="4" name="Eag defense "/></Professor></Department>
+<?xml version="1.0"?>
+<!DOCTYPE Department SYSTEM "departments.dtd">
+<Department>
+    <Professor age="45" firstName="Zmey" id="2" lastName="Gorynych">
+        <Subject hours="12" id="3" name="Teoria ispepelenia"/>
+    </Professor>
+    <Professor age="1500" firstName="Chudo" id="5" lastName="Yudo">
+        <Subject hours="50" id="7" name="Chudesa v reshete"/>
+    </Professor>
+    <Professor age="21" firstName="Ivan" id="6" lastName="Popovich">
+        <Subject hours="25" id="6" name="Bogatyrskia Syla"/>
+    </Professor>
+    <Professor age="35" firstName="Illia" id="3" lastName="Muromec"/>
+    <Professor age="15000" firstName="Koshchey" id="4" lastName="Bessmertnyi">
+        <Subject hours="100" id="4" name="Eag defense "/>
+    </Professor>
+</Department>

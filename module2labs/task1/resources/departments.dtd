@@ -1,11 +1,5 @@
-<!DOCTYPE Department [
-<!ELEMENT Department (Professor+)
-<!ELEMENT firstName (#PCDATA)>
-<!ELEMENT lastName (#PCDATA)>
-<!ELEMENT age (#PCDATA)>
-<!ELEMENT id (#PCDATA)>
-<!ELEMENT Professor (firstName, lastName, age, id, Subject+)>
-<!ELEMENT hours (#PCDATA)>
-<!ELEMENT name (#PCDATA)>
-<!ELEMENT Subject (hours, id, name)>
-]>
+<!ELEMENT Department (Professor+)>
+<!ELEMENT Professor (Subject+)>
+<!ATTLIST Professor firstName CDATA "0" lastName CDATA "0" age CDATA "0" id CDATA "0">
+<!ELEMENT Subject EMPTY>
+<!ATTLIST Subject hours CDATA "0" id CDATA "0" name CDATA "0">
